@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: AuthServer
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://betgeek-database.cltysbwuh4vq.us-east-2.rds.amazonaws.com:3306/betgeek-auth
+    username: admin
+    password: betpassword
+  jpa:
+    show-sql: true
+server:
+  port: 9090
+betgeek:
+  config:
+    oauth2:
+      userClientOauth2: auth-betgeek
+      secretClientOauth2: 4u7hb37g33kp4ssw0rd
+      symmetricKeyJwt: symmetr1cJWTs3cr37
