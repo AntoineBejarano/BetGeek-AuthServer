@@ -3,7 +3,7 @@ spring:
     name: AuthServer
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://betgeek-database.cltysbwuh4vq.us-east-2.rds.amazonaws.com:3306/betgeek-auth
+    url: jdbc:mysql://betgeek-database.cltysbwuh4vq.us-east-2.rds.amazonaws.com:3306/bebetting_bet_server
     username: admin
     password: betpassword
   jpa:
