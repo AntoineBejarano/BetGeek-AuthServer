@@ -13,7 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import io.betgeek.authserver.service.UserDetailsServiceImpl;
+import io.betgeek.authserver.service.impl.UserDetailsServiceImpl;
 
 @EnableWebSecurity
 @Configuration
@@ -42,6 +42,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.csrf().disable().authorizeRequests().antMatchers(HttpMethod.OPTIONS, "/oauth/token").permitAll();
+		http
+		.csrf().disable()
+		.authorizeRequests()
+		.antMatchers(HttpMethod.OPTIONS, "/oauth/token", "/user")
+		.permitAll()
+		.and()
+		.authorizeRequests()
+		.antMatchers(HttpMethod.GET, "/user")
+		.permitAll();
 	}
 }

@@ -1,4 +1,4 @@
-package io.betgeek.authserver.service;
+package io.betgeek.authserver.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

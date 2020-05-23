@@ -80,6 +80,28 @@
 			<artifactId>spring-boot-configuration-processor</artifactId>
 			<optional>true</optional>
 		</dependency>
+		
+		
+		<dependency>
+			<groupId>io.betgeek</groupId>
+			<artifactId>betgeek-passbolt-client</artifactId>
+			<version>1.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>io.betgeek</groupId>
+			<artifactId>OpenPGPLib</artifactId>
+			<version>1.33.0</version>
+		</dependency>
+		<dependency>
+			<groupId>io.betgeek</groupId>
+			<artifactId>bcpg-lw</artifactId>
+			<version>1.59.0</version>
+		</dependency>
+		<dependency>
+			<groupId>io.betgeek</groupId>
+			<artifactId>bcprov-lw</artifactId>
+			<version>1.59.0</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>

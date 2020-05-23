@@ -11,6 +11,13 @@ spring:
 server:
   port: 9090
 betgeek:
+  passbolt:
+    admin:
+      fingerprint: 24F3D4CA2F65532C2246440CA53C33FBB01E252C 
+      id: 8603e25c-f321-463e-8044-34bc23333d0c
+      publicKey: public-passbolt@betgeek.io.asc
+      privateKey: private-passbolt@betgeek.io.asc
+      secret: BetGeekPassBoltM4inP44Sw0rd$.
   config:
     oauth2:
       userClientOauth2: auth-betgeek

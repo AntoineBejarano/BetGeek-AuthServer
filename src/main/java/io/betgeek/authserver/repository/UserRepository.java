@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import io.betgeek.authserver.entity.User;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, String> {
 
 	User findByUsername(String usuario);
 	
