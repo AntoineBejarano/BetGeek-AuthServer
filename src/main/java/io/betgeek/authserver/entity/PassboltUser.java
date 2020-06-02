@@ -3,7 +3,10 @@ package io.betgeek.authserver.entity;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 
@@ -24,4 +27,13 @@ public class PassboltUser {
 	private String type;
 	private String uid;
 	
+	@JsonIgnore
+	@Lob
+	@Column(name = "private_key")
+	private byte[] privateKey;
+
+	@JsonIgnore
+	@Lob
+	@Column(name = "public_key")
+	private byte[] publicKey;
 }

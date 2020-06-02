@@ -14,6 +14,8 @@ public class CustomUserDetails implements UserDetails {
 	private String username;
 	private String id;
 	private PassboltUser passboltUser;
+	private String firstName;
+	private String lastName;
 	
 	public CustomUserDetails() {
 
@@ -24,12 +26,30 @@ public class CustomUserDetails implements UserDetails {
 		this.password = user.getPassword();
 		this.id = user.getId();
 		this.passboltUser = passboltUser;
+		this.firstName = user.getFirstName();
+		this.lastName = user.getLastName();
 		this.authorities = new ArrayList<>();
 	}
 	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return this.authorities;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
 	}
 
 	@Override

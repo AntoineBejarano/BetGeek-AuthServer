@@ -5,7 +5,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException.BadRequest;
 
 import io.betgeek.authserver.entity.CustomUserDetails;
 import io.betgeek.authserver.entity.PassboltUser;
@@ -24,7 +23,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		System.out.println("Init Auth [" + username + "]");
 		User user = userRepository.findByUsername(username);
 		PassboltUser passboltUser = null;
 		if (user == null) {
@@ -35,10 +33,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 			}
 		}
 		return new CustomUserDetails(user, passboltUser);
-	}
-	
-	public void saveUser(User user) throws BadRequest {
-		userRepository.save(user);
 	}
 
 }

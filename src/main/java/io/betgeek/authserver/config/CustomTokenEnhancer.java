@@ -19,6 +19,8 @@ public class CustomTokenEnhancer implements TokenEnhancer {
 			Map<String, Object> additionalInfo = new HashMap<>();
 			additionalInfo.put("userId", user.getId());
 			additionalInfo.put("passbolt", user.getPassboltUser());
+			additionalInfo.put("firstName", user.getFirstName());
+			additionalInfo.put("lastName", user.getLastName());
 			((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
 		}
 		
