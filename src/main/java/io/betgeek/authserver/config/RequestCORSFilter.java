@@ -1,6 +1,9 @@
 package io.betgeek.authserver.config;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -18,14 +21,25 @@ import org.springframework.stereotype.Component;
 @Component
 public class RequestCORSFilter implements Filter {
 
+	private List<String> whiteList = Arrays.asList(
+			"http://ec2-3-23-9-143.us-east-2.compute.amazonaws.com",
+			"https://ec2-3-23-9-143.us-east-2.compute.amazonaws.com",
+			"http://localhost:4200",
+			"https://localhost:4200",
+			"http://app.betgeek.io",
+			"https://app.betgeek.io");
+	
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 			throws IOException, ServletException {
 		
 		HttpServletResponse response = (HttpServletResponse) res;
         HttpServletRequest request = (HttpServletRequest) req;
-        response.setHeader("Access-Control-Allow-Origin", "http://ec2-3-23-9-143.us-east-2.compute.amazonaws.com");
-        //response.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
+        
+        String domainOrigin = request.getHeader("Origin");
+        if (isPermitedDomain(domainOrigin)) {
+            response.setHeader("Access-Control-Allow-Origin", domainOrigin);
+        }
         response.setHeader("Access-Control-Allow-Methods", "POST, PUT, GET, OPTIONS, DELETE");
         response.setHeader("Access-Control-Max-Age", "3600");
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with, authorization, content-type, withCredentials");
@@ -37,4 +51,9 @@ public class RequestCORSFilter implements Filter {
             chain.doFilter(req, res);
         }
 	}
+	
+	private Boolean isPermitedDomain(String domain) {
+		return whiteList.contains(domain);
+	}
+	
 }
