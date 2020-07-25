@@ -13,6 +13,7 @@ public class CustomUserDetails implements UserDetails {
 	private String password;
 	private String username;
 	private String id;
+	private String idRol;
 	private PassboltUser passboltUser;
 	private String firstName;
 	private String lastName;
@@ -25,6 +26,7 @@ public class CustomUserDetails implements UserDetails {
 		this.username = user.getUsername();
 		this.password = user.getPassword();
 		this.id = user.getId();
+		this.idRol = user.getIdRole().toString();
 		this.passboltUser = passboltUser;
 		this.firstName = user.getFirstName();
 		this.lastName = user.getLastName();
@@ -68,6 +70,10 @@ public class CustomUserDetails implements UserDetails {
 	
 	public PassboltUser getPassboltUser() {
 		return this.passboltUser;
+	}
+	
+	public String getIdRol() {
+		return this.idRol;
 	}
 
 	@Override

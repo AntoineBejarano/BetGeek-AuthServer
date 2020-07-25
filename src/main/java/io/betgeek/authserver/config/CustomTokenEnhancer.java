@@ -21,6 +21,7 @@ public class CustomTokenEnhancer implements TokenEnhancer {
 			additionalInfo.put("passbolt", user.getPassboltUser());
 			additionalInfo.put("firstName", user.getFirstName());
 			additionalInfo.put("lastName", user.getLastName());
+			additionalInfo.put("rolId", user.getIdRol());
 			((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
 		}
 		
