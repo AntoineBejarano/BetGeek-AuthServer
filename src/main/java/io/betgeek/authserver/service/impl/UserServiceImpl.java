@@ -179,7 +179,7 @@ public class UserServiceImpl implements UserService {
 			int lastLineIndex = privateTextSplit.length - 1;
 			
 			if (!privateTextSplit[0].toString().equals(PRIVATE_KEY_BEGIN) ||
-				!privateTextSplit[1].toString().equals(PRIVATE_KEY_VERSION) ||
+				// !privateTextSplit[1].toString().equals(PRIVATE_KEY_VERSION) ||
 				!privateTextSplit[2].toString().equals(PRIVATE_KEY_COMMENT) ||
 				!privateTextSplit[lastLineIndex].toString().equals(PRIVATE_KEY_END)) {
 				throw new BadRequestException("El archivo privado no es valido");

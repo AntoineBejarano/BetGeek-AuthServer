@@ -22,6 +22,11 @@ public class CustomTokenEnhancer implements TokenEnhancer {
 			additionalInfo.put("firstName", user.getFirstName());
 			additionalInfo.put("lastName", user.getLastName());
 			additionalInfo.put("rolId", user.getIdRol());
+			if (user.getPartnerId() != null && !user.getPartnerId().isEmpty()) {
+				additionalInfo.put("partnerId", user.getPartnerId());
+				additionalInfo.put("partnerFirstName", user.getPartnerFirstName());
+				additionalInfo.put("partnerLastName", user.getPartnerLastName());
+			}
 			((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
 		}
 		

@@ -18,6 +18,10 @@ public class CustomUserDetails implements UserDetails {
 	private String firstName;
 	private String lastName;
 	
+	private String partnerId;
+	private String partnerFirstName;
+	private String partnerLastName;
+	
 	public CustomUserDetails() {
 
 	}
@@ -33,6 +37,46 @@ public class CustomUserDetails implements UserDetails {
 		this.authorities = new ArrayList<>();
 	}
 	
+	public CustomUserDetails(User user, PassboltUser passboltUser, User partner) {
+		this.username = user.getUsername();
+		this.password = user.getPassword();
+		this.id = user.getId();
+		this.idRol = user.getIdRole().toString();
+		this.passboltUser = passboltUser;
+		this.firstName = user.getFirstName();
+		this.lastName = user.getLastName();
+		this.authorities = new ArrayList<>();
+		if (partner != null) {
+			this.partnerId = partner.getId();
+			this.partnerFirstName = partner.getFirstName();
+			this.partnerLastName = partner.getLastName();
+		}
+	}
+
+	public String getPartnerId() {
+		return partnerId;
+	}
+
+	public void setPartnerId(String partnerId) {
+		this.partnerId = partnerId;
+	}
+
+	public String getPartnerFirstName() {
+		return partnerFirstName;
+	}
+
+	public void setPartnerFirstName(String partnerFirstName) {
+		this.partnerFirstName = partnerFirstName;
+	}
+
+	public String getPartnerLastName() {
+		return partnerLastName;
+	}
+
+	public void setPartnerLastName(String partnerLastName) {
+		this.partnerLastName = partnerLastName;
+	}
+
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return this.authorities;
