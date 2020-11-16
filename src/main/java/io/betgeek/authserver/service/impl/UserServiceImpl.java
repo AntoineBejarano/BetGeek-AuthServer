@@ -5,19 +5,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.ws.rs.BadRequestException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.beetgeek.passbolt.exceptions.BadRequestException;
 import io.beetgeek.passbolt.model.json.UserRequest;
 import io.betgeek.authserver.entity.PassboltClientMainInfo;
 import io.betgeek.authserver.entity.PassboltUser;

@@ -1,9 +1,8 @@
 package io.betgeek.authserver.service;
 
-import javax.ws.rs.BadRequestException;
-
 import org.springframework.web.multipart.MultipartFile;
 
+import io.beetgeek.passbolt.exceptions.BadRequestException;
 import io.betgeek.authserver.entity.PassboltClientMainInfo;
 import io.betgeek.authserver.exception.RedirecException;
 import io.betgeek.authserver.exception.UserException;

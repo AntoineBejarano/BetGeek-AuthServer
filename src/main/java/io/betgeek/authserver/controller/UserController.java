@@ -3,8 +3,6 @@ package io.betgeek.authserver.controller;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.ws.rs.BadRequestException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -23,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 
+import io.beetgeek.passbolt.exceptions.BadRequestException;
 import io.betgeek.authserver.entity.PassboltClientMainInfo;
 import io.betgeek.authserver.exception.RedirecException;
 import io.betgeek.authserver.exception.UserException;
@@ -56,7 +55,7 @@ public class UserController {
 	private String passboltAdminSecret;
 	
 	@GetMapping("/")
-	public ResponseEntity<?> getUser(@RequestHeader(name = "Authorization", required = true) String token) {
+	public ResponseEntity<?> getUser(@RequestHeader(name = "Authorization", required = true) String token) throws BadRequestException {
 		try {
 			String userId = jwtUtils.getClaim(token, "userId");
 			UserVO user = userService.getUser(userId);
