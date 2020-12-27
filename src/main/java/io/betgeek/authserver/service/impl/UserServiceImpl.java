@@ -65,6 +65,20 @@ public class UserServiceImpl implements UserService {
 		userRepository.save(user);
 		return userId;
 	}
+	
+
+	@Override
+	public String saveUser(UserVO userVo) throws UserException, BadRequestException {
+		checkInfoUser(userVo);
+		User user = voToEntity(userVo);
+		String userId = UUID.randomUUID().toString();
+		user.setId(userId);
+		user.setIdRole(3l);
+		user.setActive(true);
+		user.setPassboltComplete(false);
+		userRepository.save(user);
+		return userId;
+	}
 
 	@Override
 	public void savePassboltData(PassboltClientMainInfo mainInfo, String userId, MultipartFile privateFile)
@@ -110,7 +124,7 @@ public class UserServiceImpl implements UserService {
 		if (user == null) throw new BadRequestException("userId no encontrado");
 		return userMapper.entityToVo(user);
 	}
-
+	
 	@Override
 	public void updateUser(UserVO user) throws BadRequestException {
 		checkInfoUpdateUser(user);
@@ -121,6 +135,7 @@ public class UserServiceImpl implements UserService {
 		}
 		entityUser.setFirstName(user.getFirstName());
 		entityUser.setLastName(user.getLastName());
+		entityUser.setActive(user.getActive());
 		userRepository.save(entityUser);
 	}
 
@@ -133,7 +148,7 @@ public class UserServiceImpl implements UserService {
 		}
 		User validUser = userRepository.findByUsername(user.getUsername());
 		if (validUser != null) {
-			throw new BadRequestException("El email [" + user.getUsername() + "] ya esta registrado");
+			throw new BadRequestException("El usuario [" + user.getUsername() + "] ya esta registrado");
 		}
 	}
 	

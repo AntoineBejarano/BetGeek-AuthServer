@@ -14,5 +14,6 @@ public interface UserService {
 	void savePassboltData(PassboltClientMainInfo mainInfo, String userId, MultipartFile privateFile) throws UserException, BadRequestException, RedirecException;
 	UserVO getUser(String userId) throws BadRequestException;
 	void updateUser(UserVO user) throws BadRequestException;
+	String saveUser(UserVO userVo) throws UserException, BadRequestException;
 	
 }

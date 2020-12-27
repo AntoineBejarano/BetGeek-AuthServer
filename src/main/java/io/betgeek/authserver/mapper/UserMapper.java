@@ -9,7 +9,7 @@ import io.betgeek.authserver.vo.UserVO;
 public class UserMapper {
 
 	public UserVO entityToVo(User user) {
-		return new UserVO(user.getUsername(), user.getFirstName(), user.getLastName(), user.getIdRole(), user.getId());
+		return new UserVO(user.getUsername(), user.getFirstName(), user.getLastName(), user.getIdRole(), user.getId(), user.getActive());
 	}
 	
 }

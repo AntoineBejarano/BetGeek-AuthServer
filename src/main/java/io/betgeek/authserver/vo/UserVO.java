@@ -10,18 +10,21 @@ public class UserVO {
 	private String firstName;
 	private String lastName;
 	private String password;
+	private String email;
+	private Boolean active;
 	private Long rolId;
 	
 	public UserVO() {
 		
 	}
 	
-	public UserVO(String username, String firstName, String lastName, Long rolId, String userId) {
+	public UserVO(String username, String firstName, String lastName, Long rolId, String userId, Boolean active) {
 		this.username = username;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.rolId = rolId;
 		this.userId = userId;
+		this.active = active;
 	}
 	
 }

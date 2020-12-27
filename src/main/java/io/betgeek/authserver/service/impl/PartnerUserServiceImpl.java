@@ -10,9 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 import io.beetgeek.passbolt.exceptions.BadRequestException;
 import io.betgeek.authserver.dto.PartnerUserDTO;
 import io.betgeek.authserver.entity.PartnerUsers;
+import io.betgeek.authserver.exception.UserException;
+import io.betgeek.authserver.repository.BetsPlacedRepository;
 import io.betgeek.authserver.repository.PartnerUsersRepository;
 import io.betgeek.authserver.service.PartnerUsersService;
 import io.betgeek.authserver.service.UserService;
+import io.betgeek.authserver.vo.DashBoardDataResponse;
 import io.betgeek.authserver.vo.UserVO;
 
 @Service
@@ -20,6 +23,9 @@ public class PartnerUserServiceImpl implements PartnerUsersService {
 
 	@Autowired
 	private PartnerUsersRepository partnerUserRepository;
+	
+	@Autowired
+	private BetsPlacedRepository betsPlacedRepository;
 	
 	@Autowired
 	private UserService userService;
@@ -41,7 +47,7 @@ public class PartnerUserServiceImpl implements PartnerUsersService {
 		for (PartnerUsers partnerUser : partnerUsers) {
 			UserVO user = userService.getUser(partnerUser.getIdUser());
 			if (user != null) {
-				userList.add(new PartnerUserDTO(user.getUserId(), user.getFirstName(), user.getLastName()));
+				userList.add(new PartnerUserDTO(user.getUserId(), user.getFirstName(), user.getLastName(), user.getUsername(), user.getEmail(), user.getActive()));
 			}
 		}
 		return userList;
@@ -58,6 +64,45 @@ public class PartnerUserServiceImpl implements PartnerUsersService {
 	@Transactional
 	public void delete(String idPartner, String idUser) {
 		partnerUserRepository.deleteByIdPartnerAndIdUser(idPartner, idUser);
+	}
+
+	@Override
+	public void save(String partnerId, UserVO user) throws UserException, BadRequestException {
+		String saveUserId = userService.saveUser(user);
+		PartnerUsers partnerUser = new PartnerUsers();
+		partnerUser.setIdPartner(partnerId);
+		partnerUser.setActive(true);
+		partnerUser.setIdUser(saveUserId);
+		partnerUserRepository.save(partnerUser);
+	}
+
+	@Override
+	public void updateUser(String partnerId, UserVO user) throws BadRequestException {
+		userService.updateUser(user);
+	}
+
+	@Override
+	public void changeState(String idUser) throws BadRequestException {
+		UserVO user = userService.getUser(idUser);
+		user.setActive(!user.getActive());
+		userService.updateUser(user);
+	}
+	
+	@Override
+	public DashBoardDataResponse getDashBoardData(String userId, String rolId) throws BadRequestException {
+		List<String> userList = new ArrayList<>();
+		if(Integer.valueOf(rolId) == 1) {
+			return betsPlacedRepository.getUserDashBoardDataForGodUser();
+		} else if(Integer.valueOf(rolId) == 2) {
+			List<PartnerUsers> partnerUsers = findByPartner(userId);
+			userList.add(userId);
+			for (PartnerUsers partnerUser : partnerUsers) {
+				userList.add(partnerUser.getIdUser());
+			}
+		} else {
+			userList.add(userId);
+		}
+		return betsPlacedRepository.getUserDashBoardData(userList);
 	}
 
 }
