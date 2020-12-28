@@ -108,6 +108,17 @@ public class UserController {
 		}
 	}
 	
+	@GetMapping("/isActive/{userId}")
+	public ResponseEntity<?> userIsActive(@PathVariable(name = "userId", required = true) String userId) {
+		try {
+			UserVO user = userService.getUser(userId);
+			HttpStatus httpStatus = user.getActive() ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
+			return new ResponseEntity<HttpResponse>(new HttpResponse(httpStatus, ""), httpStatus);
+		} catch (BadRequestException e) {
+			return new ResponseEntity<HttpResponse>(new HttpResponse(HttpStatus.UNAUTHORIZED, ""), HttpStatus.UNAUTHORIZED);
+		}
+	}
+	
 	private PassboltClientMainInfo getMainInfoPassbolt() throws BadRequestException {
 		InputStream privateKeyPath = null;
 		InputStream publicKeyPath = null;
