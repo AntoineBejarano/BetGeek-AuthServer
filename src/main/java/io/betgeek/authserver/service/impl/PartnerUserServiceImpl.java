@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import io.beetgeek.passbolt.exceptions.BadRequestException;
 import io.betgeek.authserver.dto.PartnerUserDTO;
 import io.betgeek.authserver.entity.PartnerUsers;
+import io.betgeek.authserver.enums.Roles;
 import io.betgeek.authserver.exception.UserException;
 import io.betgeek.authserver.repository.BetsPlacedRepository;
 import io.betgeek.authserver.repository.PartnerUsersRepository;
@@ -41,10 +42,21 @@ public class PartnerUserServiceImpl implements PartnerUsersService {
 	}
 
 	@Override
-	public List<PartnerUserDTO> getDTOByPartner(String idPartner) throws BadRequestException {
+	public List<PartnerUserDTO> getDTOByPartner(String idPartner, String rolId) throws BadRequestException {
 		List<PartnerUserDTO> userList = new ArrayList<>();
-		List<PartnerUsers> partnerUsers = findByPartner(idPartner);
-		for (PartnerUsers partnerUser : partnerUsers) {
+		if(Long.valueOf(rolId) == Roles.ADMIN.id()) {
+			List<PartnerUsers> allUsers = partnerUserRepository.findAll();		
+			userList = getUserVOList(allUsers);
+		} else if(Long.valueOf(rolId) == Roles.PARTNER.id()) {
+			List<PartnerUsers> partnerUsers = findByPartner(idPartner);		
+			userList = getUserVOList(partnerUsers);
+		}
+		return userList;
+	}
+
+	private List<PartnerUserDTO> getUserVOList(List<PartnerUsers> allUsers) throws BadRequestException {
+		List<PartnerUserDTO> userList = new ArrayList<>();
+		for (PartnerUsers partnerUser : allUsers) {
 			UserVO user = userService.getUser(partnerUser.getIdUser());
 			if (user != null) {
 				userList.add(new PartnerUserDTO(user.getUserId(), user.getFirstName(), user.getLastName(), user.getUsername(), user.getEmail(), user.getActive()));
@@ -91,9 +103,9 @@ public class PartnerUserServiceImpl implements PartnerUsersService {
 	@Override
 	public DashBoardDataResponse getDashBoardData(String userId, String rolId) throws BadRequestException {
 		List<String> userList = new ArrayList<>();
-		if(Integer.valueOf(rolId) == 1) {
+		if(Long.valueOf(rolId) == Roles.ADMIN.id()) {
 			return betsPlacedRepository.getUserDashBoardDataForGodUser();
-		} else if(Integer.valueOf(rolId) == 2) {
+		} else if(Long.valueOf(rolId) == Roles.PARTNER.id()) {
 			List<PartnerUsers> partnerUsers = findByPartner(userId);
 			userList.add(userId);
 			for (PartnerUsers partnerUser : partnerUsers) {

@@ -13,7 +13,7 @@ public interface PartnerUsersService {
 
 	PartnerUsers findByUser(String idUser);
 	List<PartnerUsers> findByPartner(String idPartner);
-	List<PartnerUserDTO> getDTOByPartner(String idPartner) throws BadRequestException;
+	List<PartnerUserDTO> getDTOByPartner(String idPartner, String rolId) throws BadRequestException;
 	PartnerUserDTO getDTOByPartnerAndUser(String idPartner, String idUser) throws BadRequestException;
 	void delete(String idPartner, String idUser);
 	void save(String partnerId, UserVO user) throws UserException, BadRequestException;

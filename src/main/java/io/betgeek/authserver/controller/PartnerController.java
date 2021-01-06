@@ -43,11 +43,11 @@ public class PartnerController {
 				@PathVariable(name = "partnerId", required = true) String partnerId) throws BadRequestException {
 		try {
 			String rolId = jwtUtils.getClaim(token, "rolId");
-			if (!Roles.PARTNER.id().toString().contentEquals(rolId)) {
+			if (!Roles.PARTNER.id().toString().contentEquals(rolId) && !Roles.ADMIN.id().toString().contentEquals(rolId)) {
 				return new ResponseEntity<>(new HttpResponse(HttpStatus.UNAUTHORIZED, "No tienes permisos para realizar esta acción"), HttpStatus.UNAUTHORIZED);
 			}
 			
-			List<PartnerUserDTO> userList = partnerUsersService.getDTOByPartner(partnerId);
+			List<PartnerUserDTO> userList = partnerUsersService.getDTOByPartner(partnerId, rolId);
 			
 			return new ResponseEntity<>(userList, HttpStatus.OK);
 		} catch (JWTVerificationException e){
