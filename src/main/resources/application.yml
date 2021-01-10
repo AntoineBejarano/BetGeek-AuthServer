@@ -2,10 +2,14 @@ spring:
   application:
     name: AuthServer
   datasource:
-    driverClassName: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://betgeek-database.cltysbwuh4vq.us-east-2.rds.amazonaws.com:3306/bebetting_bet_server
-    username: admin
-    password: betpassword
+#    driverClassName: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://betgeek-database.cltysbwuh4vq.us-east-2.rds.amazonaws.com:3306/bebetting_bet_server
+#    username: admin
+#    password: betpassword
+    platform: postgres
+    url: jdbc:postgresql://surebet.cvwkv2akfq0s.eu-west-3.rds.amazonaws.com:5432/betgeek
+    username: surebet
+    password: qOkXhE8LImQIzN0p
   jpa:
     show-sql: true
 server:

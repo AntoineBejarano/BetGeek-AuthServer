@@ -10,7 +10,7 @@ import javax.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name = "roles_permissions")
+@Table(name = "roles_permissions", schema = "betgeek_auth")
 @Data
 public class RolePermission {
 

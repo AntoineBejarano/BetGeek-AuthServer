@@ -13,11 +13,12 @@ import javax.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name = "main_users")
+@Table(name = "users", schema = "betgeek_auth")
 @Data
 public class User {
 
 	@Id
+	@Column(name = "id_user")
 	private String id;
 	@Column(nullable = false)
 	private String username;
@@ -29,7 +30,8 @@ public class User {
 
 	@Column(name = "id_passbolt")
 	private String idPassbolt;
-	@Column(nullable = false)
+	
+	@Column(nullable = false, name = "state")
 	private Boolean active;
 	
 	@Column(name = "first_name")
@@ -44,7 +46,7 @@ public class User {
 	@Column(name = "create_date")
 	private Date createDate;
 
-	@Column(name = "modify_date")
+	@Column(name = "update_date")
 	private Date modifyDate;
 	
 	@PrePersist

@@ -14,7 +14,7 @@ import javax.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name = "partner_users")
+@Table(name = "partner_users", schema = "betgeek_auth")
 @Data
 public class PartnerUsers {
 
@@ -28,7 +28,7 @@ public class PartnerUsers {
 	@Column(name = "id_user")
 	private String idUser;
 	
-	@Column(nullable = false)
+	@Column(nullable = false, name = "state")
 	private Boolean active;
 	
 	@Column(name = "create_date")
