@@ -12,6 +12,7 @@ public class UserVO {
 	private String password;
 	private Long rolId;
 	private Boolean active;
+	private String registerKeyId;
 	
 	public UserVO() {
 		

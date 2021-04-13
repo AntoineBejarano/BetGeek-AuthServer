@@ -5,12 +5,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
 
@@ -20,15 +18,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.beetgeek.passbolt.model.json.UserRequest;
+import io.betgeek.authserver.dto.RegisterKeyDTO;
+import io.betgeek.authserver.entity.PartnerUsers;
 import io.betgeek.authserver.entity.PassboltClientMainInfo;
 import io.betgeek.authserver.entity.PassboltUser;
 import io.betgeek.authserver.entity.User;
 import io.betgeek.authserver.exception.RedirecException;
 import io.betgeek.authserver.exception.UserException;
 import io.betgeek.authserver.mapper.UserMapper;
+import io.betgeek.authserver.repository.PartnerUsersRepository;
 import io.betgeek.authserver.repository.PassboltUserRespository;
 import io.betgeek.authserver.repository.UserRepository;
 import io.betgeek.authserver.service.PassboltService;
+import io.betgeek.authserver.service.RegisterKeyService;
 import io.betgeek.authserver.service.UserService;
 import io.betgeek.authserver.vo.UserVO;
 
@@ -50,8 +52,14 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private PassboltUserRespository passboltUserRepository;
 	
+	@Autowired
+	private RegisterKeyService registerKeyService;
+	
+	@Autowired
+	private PartnerUsersRepository partnerUsersRepository;
+	
 	private static final String PRIVATE_KEY_BEGIN = "-----BEGIN PGP PRIVATE KEY BLOCK-----";
-	private static final String PRIVATE_KEY_VERSION = "Version: OpenPGP.js v4.6.2";
+//	private static final String PRIVATE_KEY_VERSION = "Version: OpenPGP.js v4.6.2";
 	private static final String PRIVATE_KEY_COMMENT = "Comment: https://openpgpjs.org";
 	private static final String PRIVATE_KEY_END = "-----END PGP PRIVATE KEY BLOCK-----";
 
@@ -68,6 +76,21 @@ public class UserServiceImpl implements UserService {
 		user.setActive(true);
 		user.setPassboltComplete(false);
 		userRepository.save(user);
+		
+		try {
+			RegisterKeyDTO registerKey = registerKeyService.getByRegisterKeyId(userVo.getRegisterKeyId());
+			PartnerUsers partnerUser = new PartnerUsers();
+			partnerUser.setIdPartner(registerKey.getPartnerId());
+			partnerUser.setIdUser(userId);
+			partnerUser.setActive(true);
+			partnerUsersRepository.save(partnerUser);
+			
+			registerKey.setUserId(userId);
+			registerKey.setState(false);
+			registerKey.setActivateDate(new Date(System.currentTimeMillis()));
+			registerKeyService.save(registerKey);
+		} catch (Exception e) { }
+		
 		return userId;
 	}
 
@@ -133,12 +156,18 @@ public class UserServiceImpl implements UserService {
 		if (user.getUsername() == null || user.getUsername().isEmpty()
 			|| user.getPassword() == null || user.getPassword().isEmpty()
 			|| user.getFirstName() == null || user.getFirstName().isEmpty()
-			|| user.getLastName() == null || user.getLastName().isEmpty()) {
+			|| user.getLastName() == null || user.getLastName().isEmpty()
+			|| user.getRegisterKeyId() == null || user.getRegisterKeyId().isEmpty()) {
 			throw new BadRequestException("No se enviaron todos los campos");
 		}
 		User validUser = userRepository.findByUsername(user.getUsername());
 		if (validUser != null) {
 			throw new BadRequestException("El email [" + user.getUsername() + "] ya esta registrado");
+		}
+		try {
+			registerKeyService.getByRegisterKeyId(user.getRegisterKeyId());
+		} catch (Exception e) {
+			throw new BadRequestException(e.getMessage());
 		}
 	}
 	

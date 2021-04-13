@@ -1,7 +1,6 @@
 package io.betgeek.authserver.config;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,8 +21,10 @@ import org.springframework.stereotype.Component;
 public class RequestCORSFilter implements Filter {
 
 	private List<String> whiteList = Arrays.asList(
-			"http://ec2-3-23-9-143.us-east-2.compute.amazonaws.com",
-			"https://ec2-3-23-9-143.us-east-2.compute.amazonaws.com",
+			"http://35.180.139.239",
+			"https://35.180.139.239",
+			"http://15.188.3.112",
+			"https://15.188.3.112",
 			"http://localhost:4200",
 			"https://localhost:4200",
 			"http://app.betgeek.io",

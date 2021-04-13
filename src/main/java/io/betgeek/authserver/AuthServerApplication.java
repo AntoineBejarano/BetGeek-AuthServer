@@ -4,12 +4,16 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 
+import io.betgeek.domain.configurations.DomainConfiguration;
+
 @SpringBootApplication
 @EnableAuthorizationServer
+@Import(DomainConfiguration.class)
 public class AuthServerApplication {
 
 	private PasswordEncoder passwordEncoder;
