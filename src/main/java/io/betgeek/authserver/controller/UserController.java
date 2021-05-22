@@ -104,7 +104,7 @@ public class UserController {
 		} catch (BadRequestException e) {
 			return new ResponseEntity<HttpResponse>(new HttpResponse(HttpStatus.BAD_REQUEST, e.getMessage()), HttpStatus.BAD_REQUEST);
 		} catch (UserException e) {
-			return new ResponseEntity<HttpResponse>(new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<HttpResponse>(new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getErrorMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
