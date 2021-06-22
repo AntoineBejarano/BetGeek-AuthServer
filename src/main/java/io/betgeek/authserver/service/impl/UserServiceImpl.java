@@ -19,20 +19,20 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.beetgeek.passbolt.model.json.UserRequest;
 import io.betgeek.authserver.dto.RegisterKeyDTO;
-import io.betgeek.authserver.entity.PartnerUsers;
 import io.betgeek.authserver.entity.PassboltClientMainInfo;
-import io.betgeek.authserver.entity.PassboltUser;
-import io.betgeek.authserver.entity.User;
 import io.betgeek.authserver.exception.RedirecException;
 import io.betgeek.authserver.exception.UserException;
 import io.betgeek.authserver.mapper.UserMapper;
-import io.betgeek.authserver.repository.PartnerUsersRepository;
-import io.betgeek.authserver.repository.PassboltUserRespository;
-import io.betgeek.authserver.repository.UserRepository;
 import io.betgeek.authserver.service.PassboltService;
 import io.betgeek.authserver.service.RegisterKeyService;
 import io.betgeek.authserver.service.UserService;
 import io.betgeek.authserver.vo.UserVO;
+import io.betgeek.domain.persistence.entity.PartnerUsersPersistenceEntity;
+import io.betgeek.domain.persistence.entity.PassboltUserPersistenceEntity;
+import io.betgeek.domain.persistence.entity.UserPersistenceEntity;
+import io.betgeek.domain.persistence.repository.PartnerUsersPersistenceRepository;
+import io.betgeek.domain.persistence.repository.PassboltUserPersistenceRepository;
+import io.betgeek.domain.persistence.repository.UserPersistenceRepository;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -44,19 +44,19 @@ public class UserServiceImpl implements UserService {
 	private PasswordEncoder passwordEncoder;
 	
 	@Autowired
-	private UserRepository userRepository;
+	private UserPersistenceRepository userRepository;
 	
 	@Autowired
 	private UserMapper userMapper;
 	
 	@Autowired
-	private PassboltUserRespository passboltUserRepository;
+	private PassboltUserPersistenceRepository passboltUserRepository;
 	
 	@Autowired
 	private RegisterKeyService registerKeyService;
 	
 	@Autowired
-	private PartnerUsersRepository partnerUsersRepository;
+	private PartnerUsersPersistenceRepository partnerUsersRepository;
 	
 	private static final String PRIVATE_KEY_BEGIN = "-----BEGIN PGP PRIVATE KEY BLOCK-----";
 //	private static final String PRIVATE_KEY_VERSION = "Version: OpenPGP.js v4.6.2";
@@ -66,11 +66,11 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public String saveUser(PassboltClientMainInfo mainInfo, UserVO userVo) throws UserException, BadRequestException {
 		checkInfoUser(userVo);
-		User user = voToEntity(userVo);
+		UserPersistenceEntity user = voToEntity(userVo);
 		UserRequest userPassbolt = userAuthToUserPassbolt(user);
 		String userId = UUID.randomUUID().toString();
 		String passboltUserId = passboltService.saveUser(mainInfo, userPassbolt);
-		user.setId(userId);
+		user.setIdUser(userId);
 		user.setIdRole(3l);
 		user.setIdPassbolt(passboltUserId);
 		user.setActive(true);
@@ -79,7 +79,7 @@ public class UserServiceImpl implements UserService {
 		
 		try {
 			RegisterKeyDTO registerKey = registerKeyService.getByRegisterKeyId(userVo.getRegisterKeyId());
-			PartnerUsers partnerUser = new PartnerUsers();
+			PartnerUsersPersistenceEntity partnerUser = new PartnerUsersPersistenceEntity();
 			partnerUser.setIdPartner(registerKey.getPartnerId());
 			partnerUser.setIdUser(userId);
 			partnerUser.setActive(true);
@@ -98,7 +98,7 @@ public class UserServiceImpl implements UserService {
 	public void savePassboltData(PassboltClientMainInfo mainInfo, String userId, MultipartFile privateFile)
 			throws UserException, BadRequestException, RedirecException {
 		checkPrivateFile(privateFile);
-		User user = userRepository.findById(userId).get();
+		UserPersistenceEntity user = userRepository.findById(userId).get();
 		if (user == null) {
 			throw new BadRequestException("El usuario no existe!");
 		}
@@ -112,8 +112,8 @@ public class UserServiceImpl implements UserService {
 			throw new BadRequestException("Tienes que completar el registro en la plataforma de Passbolt (https://passbolt.betgeek.io) para poder continuar");
 		}
 
-		PassboltUser newUserPassbolt = new PassboltUser();
-		newUserPassbolt.setId(user.getIdPassbolt());
+		PassboltUserPersistenceEntity newUserPassbolt = new PassboltUserPersistenceEntity();
+		newUserPassbolt.setIdPassboltUser(user.getIdPassbolt());
 		newUserPassbolt.setPassboltRoleId(userPassbolt.getRole_id());
 		newUserPassbolt.setPassboltRole(userPassbolt.getRole().getId());
 		newUserPassbolt.setKeyId(userPassbolt.getGpgkey().getKey_id());
@@ -134,7 +134,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserVO getUser(String userId) throws BadRequestException {
-		Optional<User> userOpt = userRepository.findById(userId);
+		Optional<UserPersistenceEntity> userOpt = userRepository.findById(userId);
 		if (!userOpt.isPresent()) throw new BadRequestException("userId no encontrado");
 		return userMapper.entityToVo(userOpt.get());
 	}
@@ -142,7 +142,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public void updateUser(UserVO user) throws BadRequestException {
 		checkInfoUpdateUser(user);
-		User entityUser = userRepository.findById(user.getUserId()).get();
+		UserPersistenceEntity entityUser = userRepository.findById(user.getUserId()).get();
 		
 		if (user.getPassword() != null && !user.getPassword().isEmpty()) {
 			entityUser.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -160,7 +160,7 @@ public class UserServiceImpl implements UserService {
 			|| user.getRegisterKeyId() == null || user.getRegisterKeyId().isEmpty()) {
 			throw new BadRequestException("No se enviaron todos los campos");
 		}
-		User validUser = userRepository.findByUsername(user.getUsername());
+		UserPersistenceEntity validUser = userRepository.findByUsername(user.getUsername());
 		if (validUser != null) {
 			throw new BadRequestException("El email [" + user.getUsername() + "] ya esta registrado");
 		}
@@ -178,8 +178,8 @@ public class UserServiceImpl implements UserService {
 		}
 	}
 	
-	private User voToEntity(UserVO vo) {
-		User user = new User();
+	private UserPersistenceEntity voToEntity(UserVO vo) {
+		UserPersistenceEntity user = new UserPersistenceEntity();
 		user.setUsername(vo.getUsername());
 		user.setFirstName(vo.getFirstName());
 		user.setLastName(vo.getLastName());
@@ -187,7 +187,7 @@ public class UserServiceImpl implements UserService {
 		return user;
 	}
 	
-	private UserRequest userAuthToUserPassbolt(User user) {
+	private UserRequest userAuthToUserPassbolt(UserPersistenceEntity user) {
 		UserRequest userPassbolt = new UserRequest();
 		userPassbolt.setUsername(user.getUsername());
 		userPassbolt.setFirstName(user.getFirstName());

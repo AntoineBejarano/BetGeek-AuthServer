@@ -6,6 +6,9 @@ import java.util.Collection;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import io.betgeek.domain.persistence.entity.PassboltUserPersistenceEntity;
+import io.betgeek.domain.persistence.entity.UserPersistenceEntity;
+
 public class CustomUserDetails implements UserDetails {
 
 	private static final long serialVersionUID = 1L; 
@@ -14,9 +17,10 @@ public class CustomUserDetails implements UserDetails {
 	private String username;
 	private String id;
 	private String idRol;
-	private PassboltUser passboltUser;
+	private PassboltUserPersistenceEntity passboltUser;
 	private String firstName;
 	private String lastName;
+	private Boolean subscriptionActive;
 	
 	private String partnerId;
 	private String partnerFirstName;
@@ -26,10 +30,10 @@ public class CustomUserDetails implements UserDetails {
 
 	}
 	
-	public CustomUserDetails(User user, PassboltUser passboltUser) {
+	public CustomUserDetails(UserPersistenceEntity user, PassboltUserPersistenceEntity passboltUser) {
 		this.username = user.getUsername();
 		this.password = user.getPassword();
-		this.id = user.getId();
+		this.id = user.getIdUser();
 		this.idRol = user.getIdRole().toString();
 		this.passboltUser = passboltUser;
 		this.firstName = user.getFirstName();
@@ -37,17 +41,18 @@ public class CustomUserDetails implements UserDetails {
 		this.authorities = new ArrayList<>();
 	}
 	
-	public CustomUserDetails(User user, PassboltUser passboltUser, User partner) {
+	public CustomUserDetails(UserPersistenceEntity user, PassboltUserPersistenceEntity passboltUser, UserPersistenceEntity partner) {
 		this.username = user.getUsername();
 		this.password = user.getPassword();
-		this.id = user.getId();
+		this.id = user.getIdUser();
 		this.idRol = user.getIdRole().toString();
 		this.passboltUser = passboltUser;
 		this.firstName = user.getFirstName();
 		this.lastName = user.getLastName();
 		this.authorities = new ArrayList<>();
+		this.subscriptionActive = user.getActive();
 		if (partner != null) {
-			this.partnerId = partner.getId();
+			this.partnerId = partner.getIdUser();
 			this.partnerFirstName = partner.getFirstName();
 			this.partnerLastName = partner.getLastName();
 		}
@@ -112,12 +117,16 @@ public class CustomUserDetails implements UserDetails {
 		return this.id;
 	}
 	
-	public PassboltUser getPassboltUser() {
+	public PassboltUserPersistenceEntity getPassboltUser() {
 		return this.passboltUser;
 	}
 	
 	public String getIdRol() {
 		return this.idRol;
+	}
+	
+	public Boolean getSubscriptionActive() {
+		return this.subscriptionActive;
 	}
 
 	@Override

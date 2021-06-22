@@ -18,11 +18,15 @@ public class CustomTokenEnhancer implements TokenEnhancer {
 			CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
 			Map<String, Object> additionalInfo = new HashMap<>();
 			additionalInfo.put("userId", user.getId());
+			user.getPassboltUser().setPrivateKey(null);
+			user.getPassboltUser().setPublicKey(null);
+			user.getPassboltUser().setType(null);
 			additionalInfo.put("passbolt", user.getPassboltUser());
 			additionalInfo.put("username", user.getUsername());
 			additionalInfo.put("firstName", user.getFirstName());
 			additionalInfo.put("lastName", user.getLastName());
 			additionalInfo.put("rolId", user.getIdRol());
+			additionalInfo.put("subscriptionActive", user.getSubscriptionActive());
 			if (user.getPartnerId() != null && !user.getPartnerId().isEmpty()) {
 				additionalInfo.put("partnerId", user.getPartnerId());
 				additionalInfo.put("partnerFirstName", user.getPartnerFirstName());
