@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,10 +30,16 @@ import io.betgeek.authserver.service.UserService;
 import io.betgeek.authserver.vo.UserVO;
 import io.betgeek.domain.persistence.entity.PartnerUsersPersistenceEntity;
 import io.betgeek.domain.persistence.entity.PassboltUserPersistenceEntity;
+import io.betgeek.domain.persistence.entity.PaymentInvoicePersistenceEntity;
+import io.betgeek.domain.persistence.entity.ServiceSubscriptionPersistenceEntity;
 import io.betgeek.domain.persistence.entity.UserPersistenceEntity;
 import io.betgeek.domain.persistence.repository.PartnerUsersPersistenceRepository;
 import io.betgeek.domain.persistence.repository.PassboltUserPersistenceRepository;
+import io.betgeek.domain.persistence.repository.PaymentInvoicePersistenceRepository;
+import io.betgeek.domain.persistence.repository.ServiceSubscriptionPersistenceRepository;
 import io.betgeek.domain.persistence.repository.UserPersistenceRepository;
+import io.betgeek.enums.Currency;
+import io.betgeek.enums.PaymentInvoiceState;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -58,6 +65,12 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private PartnerUsersPersistenceRepository partnerUsersRepository;
 	
+	@Autowired
+	private PaymentInvoicePersistenceRepository paymentInvoicePersistenceRepository;
+	
+	@Autowired
+	private ServiceSubscriptionPersistenceRepository serviceSubscriptionPersistenceRepository;
+	
 	private static final String PRIVATE_KEY_BEGIN = "-----BEGIN PGP PRIVATE KEY BLOCK-----";
 //	private static final String PRIVATE_KEY_VERSION = "Version: OpenPGP.js v4.6.2";
 	private static final String PRIVATE_KEY_COMMENT = "Comment: https://openpgpjs.org";
@@ -73,22 +86,62 @@ public class UserServiceImpl implements UserService {
 		user.setIdUser(userId);
 		user.setIdRole(3l);
 		user.setIdPassbolt(passboltUserId);
-		user.setActive(true);
+		user.setActive(false);
+		user.setStatus(true);
 		user.setPassboltComplete(false);
 		userRepository.save(user);
 		
 		try {
 			RegisterKeyDTO registerKey = registerKeyService.getByRegisterKeyId(userVo.getRegisterKeyId());
+			if (!registerKey.getState()) {
+				throw new UserException("La clave de registro no es valida");
+			}
 			PartnerUsersPersistenceEntity partnerUser = new PartnerUsersPersistenceEntity();
 			partnerUser.setIdPartner(registerKey.getPartnerId());
 			partnerUser.setIdUser(userId);
 			partnerUser.setActive(true);
 			partnerUsersRepository.save(partnerUser);
 			
+			Timestamp dateNow = new Timestamp(System.currentTimeMillis());
 			registerKey.setUserId(userId);
 			registerKey.setState(false);
 			registerKey.setActivateDate(new Date(System.currentTimeMillis()));
 			registerKeyService.save(registerKey);
+
+			user.setActive(true);
+			userRepository.save(user);
+			
+			if (registerKey.getFreeTrial()) {
+				PaymentInvoicePersistenceEntity paymentInvoice = new PaymentInvoicePersistenceEntity();
+				String idPaymentInvoice = UUID.randomUUID().toString();
+				paymentInvoice.setIdPaymentInvoice(idPaymentInvoice);
+				paymentInvoice.setPaymentProvider("BETGEEK");
+				paymentInvoice.setIdInvoice(idPaymentInvoice);
+				paymentInvoice.setInvoiceNumber("FREE-TRIAL");
+				paymentInvoice.setIdUser(userId);
+				paymentInvoice.setIdCurrency(Currency.EURO.getId());
+				paymentInvoice.setPaymentAmount(0d);
+				paymentInvoice.setServiceName("Free Trial");
+				paymentInvoice.setInvoiceState(PaymentInvoiceState.PAID.toString());
+				paymentInvoice.setCreateDate(dateNow);
+				paymentInvoice.setPaymentDate(dateNow);
+				paymentInvoice.setFinalizedDate(dateNow);
+				paymentInvoice.setExpirationDate(dateNow);
+				paymentInvoicePersistenceRepository.save(paymentInvoice);
+				
+				Timestamp subscriptionInitialDate = new Timestamp(System.currentTimeMillis());
+				Long fourHours = 14400000l;
+				Timestamp subscriptionEndDate = new Timestamp(subscriptionInitialDate.getTime() + fourHours);
+				
+				ServiceSubscriptionPersistenceEntity subscription = new ServiceSubscriptionPersistenceEntity();
+				subscription.setIdServiceSubscription(UUID.randomUUID().toString());
+				subscription.setPaymentInvoice(paymentInvoice);
+				subscription.setInitDate(subscriptionInitialDate);
+				subscription.setEndDate(subscriptionEndDate);
+				subscription.setExpired(false);
+				subscription.setFreeTrial(true);
+				serviceSubscriptionPersistenceRepository.save(subscription);
+			}
 		} catch (Exception e) { }
 		
 		return userId;

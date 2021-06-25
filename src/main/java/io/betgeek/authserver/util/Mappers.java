@@ -18,6 +18,7 @@ public class Mappers {
 		dto.setCreateDate(entity.getCreateDate());
 		dto.setActivateDate(entity.getActivationDate());
 		dto.setState(entity.getState());
+		dto.setFreeTrial(entity.getFreeTrial());
 		return dto;
 	}
 }

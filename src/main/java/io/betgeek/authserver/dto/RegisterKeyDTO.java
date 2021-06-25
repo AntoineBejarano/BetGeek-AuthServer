@@ -14,6 +14,7 @@ public class RegisterKeyDTO {
 	private Date createDate;
 	private Date activateDate;
 	private Boolean state;
+	private Boolean freeTrial;
 	
 	public RegisterKeyPersistenceEntity toPersistenceEntity() {
 		RegisterKeyPersistenceEntity entity = new RegisterKeyPersistenceEntity();
@@ -23,6 +24,7 @@ public class RegisterKeyDTO {
 		entity.setCreateDate(this.createDate);
 		entity.setActivationDate(this.activateDate);
 		entity.setState(this.state);
+		entity.setFreeTrial(this.freeTrial);
 		return entity;
 	}
 	
