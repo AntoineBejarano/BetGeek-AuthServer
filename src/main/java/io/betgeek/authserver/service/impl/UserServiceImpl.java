@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -19,27 +17,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.beetgeek.passbolt.model.json.UserRequest;
-import io.betgeek.authserver.dto.RegisterKeyDTO;
 import io.betgeek.authserver.entity.PassboltClientMainInfo;
 import io.betgeek.authserver.exception.RedirecException;
 import io.betgeek.authserver.exception.UserException;
 import io.betgeek.authserver.mapper.UserMapper;
 import io.betgeek.authserver.service.PassboltService;
-import io.betgeek.authserver.service.RegisterKeyService;
 import io.betgeek.authserver.service.UserService;
 import io.betgeek.authserver.vo.UserVO;
-import io.betgeek.domain.persistence.entity.PartnerUsersPersistenceEntity;
+import io.betgeek.domain.persistence.entity.CountryPerisistenceEntity;
+import io.betgeek.domain.persistence.entity.CurrencyPersistenceEntity;
 import io.betgeek.domain.persistence.entity.PassboltUserPersistenceEntity;
-import io.betgeek.domain.persistence.entity.PaymentInvoicePersistenceEntity;
-import io.betgeek.domain.persistence.entity.ServiceSubscriptionPersistenceEntity;
+import io.betgeek.domain.persistence.entity.PersonPersistenceEntity;
 import io.betgeek.domain.persistence.entity.UserPersistenceEntity;
-import io.betgeek.domain.persistence.repository.PartnerUsersPersistenceRepository;
 import io.betgeek.domain.persistence.repository.PassboltUserPersistenceRepository;
-import io.betgeek.domain.persistence.repository.PaymentInvoicePersistenceRepository;
-import io.betgeek.domain.persistence.repository.ServiceSubscriptionPersistenceRepository;
+import io.betgeek.domain.persistence.repository.PersonPersistenceRepository;
 import io.betgeek.domain.persistence.repository.UserPersistenceRepository;
-import io.betgeek.enums.Currency;
-import io.betgeek.enums.PaymentInvoiceState;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -60,16 +52,19 @@ public class UserServiceImpl implements UserService {
 	private PassboltUserPersistenceRepository passboltUserRepository;
 	
 	@Autowired
-	private RegisterKeyService registerKeyService;
+	private PersonPersistenceRepository personPersistenceRepository;
 	
-	@Autowired
-	private PartnerUsersPersistenceRepository partnerUsersRepository;
+//	@Autowired
+//	private RegisterKeyService registerKeyService;
 	
-	@Autowired
-	private PaymentInvoicePersistenceRepository paymentInvoicePersistenceRepository;
-	
-	@Autowired
-	private ServiceSubscriptionPersistenceRepository serviceSubscriptionPersistenceRepository;
+//	@Autowired
+//	private PartnerUsersPersistenceRepository partnerUsersRepository;
+//	
+//	@Autowired
+//	private PaymentInvoicePersistenceRepository paymentInvoicePersistenceRepository;
+//	
+//	@Autowired
+//	private ServiceSubscriptionPersistenceRepository serviceSubscriptionPersistenceRepository;
 	
 	private static final String PRIVATE_KEY_BEGIN = "-----BEGIN PGP PRIVATE KEY BLOCK-----";
 //	private static final String PRIVATE_KEY_VERSION = "Version: OpenPGP.js v4.6.2";
@@ -80,69 +75,93 @@ public class UserServiceImpl implements UserService {
 	public String saveUser(PassboltClientMainInfo mainInfo, UserVO userVo) throws UserException, BadRequestException {
 		checkInfoUser(userVo);
 		UserPersistenceEntity user = voToEntity(userVo);
-		UserRequest userPassbolt = userAuthToUserPassbolt(user);
+		UserRequest userPassbolt = userAuthToUserPassbolt(user, userVo);
 		String userId = UUID.randomUUID().toString();
 		String passboltUserId = passboltService.saveUser(mainInfo, userPassbolt);
+		
 		user.setIdUser(userId);
 		user.setIdRole(3l);
 		user.setIdPassbolt(passboltUserId);
 		user.setActive(false);
 		user.setStatus(true);
 		user.setPassboltComplete(false);
+		
+		PersonPersistenceEntity person = new PersonPersistenceEntity();
+		person.setIdPerson(UUID.randomUUID().toString());
+		person.setFirstName(userVo.getFirstName());
+		person.setLastName(userVo.getLastName());
+		person.setPhoneCountryCode(userVo.getPhoneCountryCode());
+		person.setPhoneNumber(userVo.getPhoneNumber());
+		person.setAddress(userVo.getAddress());
+		person.setIdentificationNumber(userVo.getIdentificationNumber());
+		
+		if (userVo.getIdCountry() != null) {
+			CountryPerisistenceEntity country = new CountryPerisistenceEntity();
+			country.setIdCountry(userVo.getIdCountry().longValue());
+			person.setCountry(country);
+		}
+		
+		if (userVo.getIdCurrency() != null) {
+			CurrencyPersistenceEntity currency = new CurrencyPersistenceEntity();
+			currency.setIdCurrency(userVo.getIdCurrency().longValue());
+			person.setCurrency(currency);
+		}
+		
+		personPersistenceRepository.save(person);
 		userRepository.save(user);
 		
-		try {
-			RegisterKeyDTO registerKey = registerKeyService.getByRegisterKeyId(userVo.getRegisterKeyId());
-			if (!registerKey.getState()) {
-				throw new UserException("La clave de registro no es valida");
-			}
-			PartnerUsersPersistenceEntity partnerUser = new PartnerUsersPersistenceEntity();
-			partnerUser.setIdPartner(registerKey.getPartnerId());
-			partnerUser.setIdUser(userId);
-			partnerUser.setActive(true);
-			partnerUsersRepository.save(partnerUser);
-			
-			Timestamp dateNow = new Timestamp(System.currentTimeMillis());
-			registerKey.setUserId(userId);
-			registerKey.setState(false);
-			registerKey.setActivateDate(new Date(System.currentTimeMillis()));
-			registerKeyService.save(registerKey);
-
-			user.setActive(true);
-			userRepository.save(user);
-			
-			if (registerKey.getFreeTrial()) {
-				PaymentInvoicePersistenceEntity paymentInvoice = new PaymentInvoicePersistenceEntity();
-				String idPaymentInvoice = UUID.randomUUID().toString();
-				paymentInvoice.setIdPaymentInvoice(idPaymentInvoice);
-				paymentInvoice.setPaymentProvider("BETGEEK");
-				paymentInvoice.setIdInvoice(idPaymentInvoice);
-				paymentInvoice.setInvoiceNumber("FREE-TRIAL");
-				paymentInvoice.setIdUser(userId);
-				paymentInvoice.setIdCurrency(Currency.EURO.getId());
-				paymentInvoice.setPaymentAmount(0d);
-				paymentInvoice.setServiceName("Free Trial");
-				paymentInvoice.setInvoiceState(PaymentInvoiceState.PAID.toString());
-				paymentInvoice.setCreateDate(dateNow);
-				paymentInvoice.setPaymentDate(dateNow);
-				paymentInvoice.setFinalizedDate(dateNow);
-				paymentInvoice.setExpirationDate(dateNow);
-				paymentInvoicePersistenceRepository.save(paymentInvoice);
-				
-				Timestamp subscriptionInitialDate = new Timestamp(System.currentTimeMillis());
-				Long fourHours = 14400000l;
-				Timestamp subscriptionEndDate = new Timestamp(subscriptionInitialDate.getTime() + fourHours);
-				
-				ServiceSubscriptionPersistenceEntity subscription = new ServiceSubscriptionPersistenceEntity();
-				subscription.setIdServiceSubscription(UUID.randomUUID().toString());
-				subscription.setPaymentInvoice(paymentInvoice);
-				subscription.setInitDate(subscriptionInitialDate);
-				subscription.setEndDate(subscriptionEndDate);
-				subscription.setExpired(false);
-				subscription.setFreeTrial(true);
-				serviceSubscriptionPersistenceRepository.save(subscription);
-			}
-		} catch (Exception e) { }
+//		try {
+//			RegisterKeyDTO registerKey = registerKeyService.getByRegisterKeyId(userVo.getRegisterKeyId());
+//			if (!registerKey.getState()) {
+//				throw new UserException("La clave de registro no es valida");
+//			}
+//			PartnerUsersPersistenceEntity partnerUser = new PartnerUsersPersistenceEntity();
+//			partnerUser.setIdPartner(registerKey.getPartnerId());
+//			partnerUser.setIdUser(userId);
+//			partnerUser.setActive(true);
+//			partnerUsersRepository.save(partnerUser);
+//			
+//			Timestamp dateNow = new Timestamp(System.currentTimeMillis());
+//			registerKey.setUserId(userId);
+//			registerKey.setState(false);
+//			registerKey.setActivateDate(new Date(System.currentTimeMillis()));
+//			registerKeyService.save(registerKey);
+//
+//			user.setActive(true);
+//			userRepository.save(user);
+//			
+//			if (registerKey.getFreeTrial()) {
+//				PaymentInvoicePersistenceEntity paymentInvoice = new PaymentInvoicePersistenceEntity();
+//				String idPaymentInvoice = UUID.randomUUID().toString();
+//				paymentInvoice.setIdPaymentInvoice(idPaymentInvoice);
+//				paymentInvoice.setPaymentProvider("BETGEEK");
+//				paymentInvoice.setIdInvoice(idPaymentInvoice);
+//				paymentInvoice.setInvoiceNumber("FREE-TRIAL");
+//				paymentInvoice.setIdUser(userId);
+//				paymentInvoice.setIdCurrency(Currency.EURO.getId());
+//				paymentInvoice.setPaymentAmount(0d);
+//				paymentInvoice.setServiceName("Free Trial");
+//				paymentInvoice.setInvoiceState(PaymentInvoiceState.PAID.toString());
+//				paymentInvoice.setCreateDate(dateNow);
+//				paymentInvoice.setPaymentDate(dateNow);
+//				paymentInvoice.setFinalizedDate(dateNow);
+//				paymentInvoice.setExpirationDate(dateNow);
+//				paymentInvoicePersistenceRepository.save(paymentInvoice);
+//				
+//				Timestamp subscriptionInitialDate = new Timestamp(System.currentTimeMillis());
+//				Long fourHours = 14400000l;
+//				Timestamp subscriptionEndDate = new Timestamp(subscriptionInitialDate.getTime() + fourHours);
+//				
+//				ServiceSubscriptionPersistenceEntity subscription = new ServiceSubscriptionPersistenceEntity();
+//				subscription.setIdServiceSubscription(UUID.randomUUID().toString());
+//				subscription.setPaymentInvoice(paymentInvoice);
+//				subscription.setInitDate(subscriptionInitialDate);
+//				subscription.setEndDate(subscriptionEndDate);
+//				subscription.setExpired(false);
+//				subscription.setFreeTrial(true);
+//				serviceSubscriptionPersistenceRepository.save(subscription);
+//			}
+//		} catch (Exception e) { }
 		
 		return userId;
 	}
@@ -200,8 +219,30 @@ public class UserServiceImpl implements UserService {
 		if (user.getPassword() != null && !user.getPassword().isEmpty()) {
 			entityUser.setPassword(passwordEncoder.encode(user.getPassword()));
 		}
-		entityUser.setFirstName(user.getFirstName());
-		entityUser.setLastName(user.getLastName());
+		
+		PersonPersistenceEntity person = personPersistenceRepository.findById(user.getPersonId()).orElse(null);
+		if (person != null) {
+			person.setFirstName(user.getFirstName());
+			person.setLastName(user.getLastName());
+			person.setPhoneNumber(user.getPhoneNumber());
+			person.setPhoneCountryCode(user.getPhoneCountryCode());
+			person.setIdentificationNumber(user.getIdentificationNumber());
+			person.setAddress(user.getAddress());
+			if (user.getIdCountry() != null) {
+				CountryPerisistenceEntity country = new CountryPerisistenceEntity();
+				country.setIdCountry(user.getIdCountry().longValue());
+				person.setCountry(country);
+			}
+			
+			if (user.getIdCurrency() != null) {
+				CurrencyPersistenceEntity currency = new CurrencyPersistenceEntity();
+				currency.setIdCurrency(user.getIdCurrency().longValue());
+				person.setCurrency(currency);
+			}
+			
+			personPersistenceRepository.save(person);
+		}
+		
 		userRepository.save(entityUser);
 	}
 
@@ -209,19 +250,18 @@ public class UserServiceImpl implements UserService {
 		if (user.getUsername() == null || user.getUsername().isEmpty()
 			|| user.getPassword() == null || user.getPassword().isEmpty()
 			|| user.getFirstName() == null || user.getFirstName().isEmpty()
-			|| user.getLastName() == null || user.getLastName().isEmpty()
-			|| user.getRegisterKeyId() == null || user.getRegisterKeyId().isEmpty()) {
+			|| user.getLastName() == null || user.getLastName().isEmpty()) {
 			throw new BadRequestException("No se enviaron todos los campos");
 		}
 		UserPersistenceEntity validUser = userRepository.findByUsername(user.getUsername());
 		if (validUser != null) {
 			throw new BadRequestException("El email [" + user.getUsername() + "] ya esta registrado");
 		}
-		try {
-			registerKeyService.getByRegisterKeyId(user.getRegisterKeyId());
-		} catch (Exception e) {
-			throw new BadRequestException(e.getMessage());
-		}
+//		try {
+//			registerKeyService.getByRegisterKeyId(user.getRegisterKeyId());
+//		} catch (Exception e) {
+//			throw new BadRequestException(e.getMessage());
+//		}
 	}
 	
 	private void checkInfoUpdateUser(UserVO user) throws BadRequestException {
@@ -234,17 +274,17 @@ public class UserServiceImpl implements UserService {
 	private UserPersistenceEntity voToEntity(UserVO vo) {
 		UserPersistenceEntity user = new UserPersistenceEntity();
 		user.setUsername(vo.getUsername());
-		user.setFirstName(vo.getFirstName());
-		user.setLastName(vo.getLastName());
+//		user.setFirstName(vo.getFirstName());
+//		user.setLastName(vo.getLastName());
 		user.setPassword(passwordEncoder.encode(vo.getPassword()));
 		return user;
 	}
 	
-	private UserRequest userAuthToUserPassbolt(UserPersistenceEntity user) {
+	private UserRequest userAuthToUserPassbolt(UserPersistenceEntity user, UserVO userVo) {
 		UserRequest userPassbolt = new UserRequest();
 		userPassbolt.setUsername(user.getUsername());
-		userPassbolt.setFirstName(user.getFirstName());
-		userPassbolt.setLastName(user.getLastName());
+		userPassbolt.setFirstName(userVo.getFirstName());
+		userPassbolt.setLastName(userVo.getLastName());
 		return userPassbolt;
 	}
 	
