@@ -36,8 +36,10 @@ public class CustomUserDetails implements UserDetails {
 		this.id = user.getIdUser();
 		this.idRol = user.getIdRole().toString();
 		this.passboltUser = passboltUser;
-		this.firstName = user.getFirstName();
-		this.lastName = user.getLastName();
+		if (user.getPerson() != null) {
+			this.firstName = user.getPerson().getFirstName();
+			this.lastName = user.getPerson().getLastName();
+		}
 		this.authorities = new ArrayList<>();
 	}
 	
@@ -47,14 +49,18 @@ public class CustomUserDetails implements UserDetails {
 		this.id = user.getIdUser();
 		this.idRol = user.getIdRole().toString();
 		this.passboltUser = passboltUser;
-		this.firstName = user.getFirstName();
-		this.lastName = user.getLastName();
+		if (user.getPerson() != null) {
+			this.firstName = user.getPerson().getFirstName();
+			this.lastName = user.getPerson().getLastName();
+		}
 		this.authorities = new ArrayList<>();
 		this.subscriptionActive = user.getActive();
 		if (partner != null) {
 			this.partnerId = partner.getIdUser();
-			this.partnerFirstName = partner.getFirstName();
-			this.partnerLastName = partner.getLastName();
+			if (partner.getPerson() != null) {
+				this.partnerFirstName = partner.getPerson().getFirstName();
+				this.partnerLastName = partner.getPerson().getLastName();
+			}
 		}
 	}
 

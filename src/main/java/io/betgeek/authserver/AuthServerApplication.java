@@ -26,7 +26,7 @@ public class AuthServerApplication {
 	public void test() {
 		passwordEncoder = new BCryptPasswordEncoder();
 		System.out.println("INICIADO LUEGO DE ....");
-		String password = passwordEncoder.encode("betgeek123");
+		String password = passwordEncoder.encode("t3mp0r4lp4zzw00rD");
 		System.out.println(password);
 	}
 }

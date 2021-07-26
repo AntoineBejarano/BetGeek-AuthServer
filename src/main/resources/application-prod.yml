@@ -1,0 +1,8 @@
+spring:
+  redis:
+    cluster:
+      nodes: redis-core-bot-0001-001.q4dbc2.0001.euw3.cache.amazonaws.com:6379, redis-core-bot-0001-002.q4dbc2.0001.euw3.cache.amazonaws.com:6379, redis-core-bot-0001-003.q4dbc2.0001.euw3.cache.amazonaws.com:6379
+betgeek:
+  configuration:
+    redis:
+      type: nodes

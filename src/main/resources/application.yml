@@ -12,8 +12,16 @@ spring:
     password: qOkXhE8LImQIzN0p
   jpa:
     show-sql: true
+  redis:
+    cluster:
+      nodes: redis-core-bot-0001-001.q4dbc2.0001.euw3.cache.amazonaws.com:6379, redis-core-bot-0001-002.q4dbc2.0001.euw3.cache.amazonaws.com:6379, redis-core-bot-0001-003.q4dbc2.0001.euw3.cache.amazonaws.com:6379
 server:
   port: 9090
+  ssl:
+    key-alias: betgeek-cert
+    key-store-type: JKS
+    key-password: changeit
+    key-store: classpath:betgeek-cert.jks
 betgeek:
   passbolt:
     admin:
@@ -27,3 +35,6 @@ betgeek:
       userClientOauth2: auth-betgeek
       secretClientOauth2: 4u7hb37g33kp4ssw0rd
       symmetricKeyJwt: symmetr1cJWTs3cr37
+  configuration:
+    redis:
+      type: nodes

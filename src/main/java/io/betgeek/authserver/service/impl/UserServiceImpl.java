@@ -108,6 +108,7 @@ public class UserServiceImpl implements UserService {
 		}
 		
 		personPersistenceRepository.save(person);
+		user.setPerson(person);
 		userRepository.save(user);
 		
 //		try {

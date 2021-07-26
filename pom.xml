@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>io.betgeek</groupId> 
 	<artifactId>auth-server</artifactId>
-	<version>2.5.0</version>
+	<version>3.0.0</version>
 	<name>auth-server</name>
 	<description>OAuth2 Server from infraestucture BetGeek</description>
 
@@ -54,10 +54,11 @@
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		
 		<dependency>
 			<groupId>io.betgeek</groupId>
 			<artifactId>domain</artifactId>
-			<version>10.0.2</version>
+			<version>12.0.3</version>
 		</dependency>
 		
 		<dependency>
